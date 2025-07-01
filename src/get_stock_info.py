@@ -1,8 +1,10 @@
 from crawl4ai import AsyncWebCrawler
 from crawl4ai.extraction_strategy import JsonCssExtractionStrategy
 from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
-from get_stock_page_uri import get_stock_page_uri
+from src.get_stock_page_uri import get_stock_page_uri
 import json
+import pyttsx3
+import os
 
 stock_code = "FPT"
 
@@ -107,4 +109,4 @@ async def extract_symbol_info(symbol:str):
 
 if __name__ == "__main__":
   import asyncio
-  asyncio.run(extract_symbol_info())
+  asyncio.run(extract_symbol_info("FPT"))

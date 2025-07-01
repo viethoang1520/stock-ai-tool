@@ -1,112 +1,35 @@
-from crawl4ai import AsyncWebCrawler
-from crawl4ai.extraction_strategy import JsonCssExtractionStrategy
-from crawl4ai.async_configs import BrowserConfig, CrawlerRunConfig
-from get_stock_page_uri import get_stock_page_uri
-import json
+import asyncio
+from get_stock_info import extract_symbol_info
+from analyze_stock import stock_agent, SupportDependencies, DataCrawl
+import pyttsx3
+import os
+import datetime
+import re
 
-stock_code = "VNM"
+async def main(symbol: str):
+    # 1. Lấy thông tin chứng khoán
+    stock_data = await extract_symbol_info(symbol)
+    print(f"Stock data for {symbol}: {stock_data}")
 
+    # 2. Phân tích dữ liệu (truyền data đã crawl)
+    deps = SupportDependencies(stock_data=DataCrawl(stock_data))
+    result = await stock_agent.run(f'Analyze the stock trend for {symbol} in English', deps=deps)
+    print(f"Analysis: {result.output}")
 
-async def extract_symbol_info():
-  browser_config = BrowserConfig(
-    browser_type="chromium",
-    verbose=True,
-    headless=False
-  )
-  crawler_config = CrawlerRunConfig(
-    extraction_strategy=JsonCssExtractionStrategy(
-      schema={
-        "name": "Symbol Info",
-        "baseSelector": ".dl-thongtin",
-        "fields": [
-          {
-            "name": "reference_price",
-            "selector": "#price__ref",
-            "type": "text"
-          },
-          {
-            "name": "ceiling_price",
-            "selector": "#price__ceiling",
-            "type": "text"
-          },
-          {
-            "name": "floor_price",
-            "selector": "#price__floor",
-            "type": "text"
-          },
-          {
-            "name": "highest_price",
-            "selector": "#price__high",
-            "type": "text"
-          },
-          {
-            "name": "lowest_price",
-            "selector": "#price__low",
-            "type": "text"
-          },
-          {
-            "name": "foreign_volume",
-            "selector": "#foregin__buyvol",
-            "type": "text"
-          },
-          {
-            "name": "foreign_buy_value",
-            "selector": "#foregin__buyval",
-            "type": "text"
-          },
-          {
-            "name": "foreign_sell_value",
-            "selector": "#foregin__sellval",
-            "type": "text"
-          },
-          {
-            "name": "foreign_remaining_room",
-            "selector": "#foregin__room",
-            "type": "text"
-          },
-          {
-            "name": "basic_EPS",
-            "selector": ".dlt-left-half #ContentPlaceHolder1_ucTradeInfoV3_pnEPS .r ",
-            "type": "text"
-          },
-          {
-            "name": "diluted_EPS",
-            "selector": "#ContentPlaceHolder1_ucTradeInfoV3_liEPSDieuChinh .r ",
-            "type": "text"
-          },
-          {
-            "name": "P/E",
-            "selector": "#ContentPlaceHolder1_ucTradeInfoV3_pnEPS li.clearfix:nth-of-type(3) .r",
-            "type": "text"
-          },
-          {
-            "name": "book_value_per_share",
-            "selector": ".dlt-left-half .dltl-other > ul > li.clearfix .r",
-            "type": "text"
-          },
-          {
-            "name": "P/B",
-            "selector": ".dlt-left-half .dltl-other > ul > li.clearfix:nth-of-type(2) .r",
-            "type": "text"
-          },
-                      
-        ]
-      }
-    )
-  )
-
-
-  url = await get_stock_page_uri(stock_code)
-  # url = "https://cafef.vn/du-lieu/hose/fpt-cong-ty-co-phan-fpt.chn"
-
-
-  async with AsyncWebCrawler(config=browser_config) as crawler:
-    result = await crawler.arun(url=url, config=crawler_config)
-    
-    if result and result.extracted_content:
-      data = json.loads(result.extracted_content)
-      print(data)
+    # 3. Lưu kết quả phân tích ra audio
+    os.makedirs('output/audios', exist_ok=True)
+    now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    audio_path = f'output/audios/{symbol}_analysis_{now}.mp3'
+    engine = pyttsx3.init()
+    # Giảm tốc độ đọc
+    rate = engine.getProperty('rate')
+    engine.setProperty('rate', int(rate * 0.9))
+    # Loại bỏ ký tự đặc biệt khỏi text
+    text = str(result.output)
+    text = re.sub(r'[\*\/_#\-]+', ' ', text)
+    engine.save_to_file(text, audio_path)
+    engine.runAndWait()
+    print(f"Audio saved to {audio_path}")
 
 if __name__ == "__main__":
-  import asyncio
-  asyncio.run(extract_symbol_info())
+    asyncio.run(main("FPT"))
