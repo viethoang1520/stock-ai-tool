@@ -16,11 +16,6 @@ DB_CONFIG = {
 
 app = FastAPI()
 
-@app.on_event("startup")
-async def on_startup():
-    app.state.db_pool = await asyncpg.create_pool(**DB_CONFIG)
-    print("[PERF] DB pool initialized!")
-
 class ChatRequest(BaseModel):
     message: str
 
@@ -48,16 +43,10 @@ qa_agent = Agent(
 )
 
 async def get_stock_info(symbol: str):
-    print('[DEBUG] symbol:', symbol)
-    pool = app.state.db_pool
-    async with pool.acquire() as conn:
-        stock_id = await conn.fetchrow('SELECT stock_id FROM stock WHERE symbol=$1', symbol)
-        print('[DEBUG] stock_id:', stock_id)
-        if not stock_id:
-            print('[DEBUG] Không tìm thấy stock_id cho symbol:', symbol)
-            return None
-        row = await conn.fetchrow('SELECT * FROM post WHERE stock_id=$1', stock_id['stock_id'])
-        print('[DEBUG] row:', row)
+    conn = await asyncpg.connect(**DB_CONFIG)
+    stock_id = await conn.fetchrow('SELECT stock_id FROM stock WHERE symbol=$1', symbol)
+    row = await conn.fetchrow('SELECT * FROM post WHERE stock_id=$1', stock_id['stock_id'])
+    await conn.close()
     return dict(row) if row else None
 
 @app.post("/chat")
@@ -72,4 +61,4 @@ async def chat(req: ChatRequest):
             return {"answer": f"No information found for symbol {intent}."}
     # Agent 3: LLM answers other questions
     answer = (await qa_agent.run(req.message)).output
-    return {"answer": answer}
+    return {"answer": answer} 
