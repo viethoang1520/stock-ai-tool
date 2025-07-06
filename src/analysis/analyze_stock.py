@@ -6,7 +6,7 @@ from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.deepseek import DeepSeekProvider
 from crawlers.get_stock_info import extract_symbol_info
-import pyttsx3
+from gtts import gTTS
 import os
 
 class DataCrawl:
@@ -58,7 +58,6 @@ if __name__ == '__main__':
   # Text to Speech cho kết quả phân tích
   os.makedirs('output/audios', exist_ok=True)
   audio_path = 'output/audios/ACB_analysis.mp3'
-  engine = pyttsx3.init()
-  engine.save_to_file(str(result.output), audio_path)
-  engine.runAndWait()
+  tts = gTTS(str(result.output), lang='vi')
+  tts.save(audio_path)
   print(f"Audio saved to {audio_path}")
