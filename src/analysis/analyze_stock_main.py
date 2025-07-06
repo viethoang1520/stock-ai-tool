@@ -1,6 +1,10 @@
 import asyncio
-from get_stock_info import extract_symbol_info
-from analyze_stock import stock_agent, SupportDependencies, DataCrawl
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from crawlers.get_stock_info import extract_symbol_info
+from analysis.analyze_stock import stock_agent, SupportDependencies, DataCrawl
 import pyttsx3
 import os
 import datetime
@@ -13,7 +17,7 @@ async def main(symbol: str):
 
     # 2. Phân tích dữ liệu (truyền data đã crawl)
     deps = SupportDependencies(stock_data=DataCrawl(stock_data))
-    result = await stock_agent.run(f'Analyze the stock trend for {symbol} in English', deps=deps)
+    result = await stock_agent.run(f'Analyze the stock trend for {symbol} in Vietnamese', deps=deps)
     print(f"Analysis: {result.output}")
 
     # 3. Lưu kết quả phân tích ra audio
@@ -32,4 +36,4 @@ async def main(symbol: str):
     print(f"Audio saved to {audio_path}")
 
 if __name__ == "__main__":
-    asyncio.run(main("FPT"))
+    asyncio.run(main("VCB"))

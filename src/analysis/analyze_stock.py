@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.deepseek import DeepSeekProvider
-from get_stock_info import extract_symbol_info
+from crawlers.get_stock_info import extract_symbol_info
 import pyttsx3
 import os
 
@@ -22,7 +22,11 @@ class SupportDependencies:
 
 class SupportOutput(BaseModel):
   analysis_advice: str = Field(description='Advice return to the customer')
+  symbol: str = Field(description='Symbol of the stock')
+  sentiment: str = Field(description='Sentiment of the stock: positive, negative, neutral')
+  topic: str = Field(description='Topic of the stock: news, financial, etc.')
 
+  
 model = OpenAIModel(
   'deepseek-chat',
   provider=DeepSeekProvider(api_key='sk-77f83d2fabc341ae98273eb63c0dd77a')
@@ -35,7 +39,7 @@ stock_agent = Agent(
   system_prompt=(
     'You are a stock analysis agent in our system. Provide the customer with a stock analysis based on the given stock data. '
     'Do not use any special characters (such as *, /, -, _, #, etc.) or markdown formatting in your output. '
-    'Write the analysis in plain, natural English sentences only.'
+    'Write the analysis in plain, natural Vietnamese sentences only.'
   )
 )
 

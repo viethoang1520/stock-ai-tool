@@ -6,6 +6,9 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.deepseek import DeepSeekProvider
 import os
 import asyncio
+from dotenv import load_dotenv
+load_dotenv()
+from fastapi.middleware.cors import CORSMiddleware
 
 DB_CONFIG = {
     'user': 'swd_stockintel_user',
@@ -16,6 +19,15 @@ DB_CONFIG = {
 
 app = FastAPI()
 
+# Enable CORS for all origins (adjust origins as needed for production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to your frontend URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def on_startup():
     app.state.db_pool = await asyncpg.create_pool(**DB_CONFIG)
@@ -24,7 +36,7 @@ async def on_startup():
 class ChatRequest(BaseModel):
     message: str
 
-# Agent 1: LLM to determine intent and extract stock symbol
+# Agent 1: LLM to determine intent and extract code (any type)
 intent_model = OpenAIModel(
     'deepseek-chat',
     provider=DeepSeekProvider(api_key=os.getenv('DEEPSEEK_API_KEY'))
@@ -32,8 +44,20 @@ intent_model = OpenAIModel(
 intent_agent = Agent(
     intent_model,
     system_prompt=(
-        'You are an stock  AI assistant. If the user asks about a stock symbol, return only the symbol (do not add anything else). '
-        'If not, return "OTHER".'
+        'You are an AI assistant. Your job is to extract any code (such as stock code, product code, customer code, transaction code, etc.) from the user\'s message if they are asking about, referring to, or want to analyze a specific code. '
+        'If you find a code, return ONLY the code (do not add anything else, no explanation, no quotes, no extra text). '
+        'If there is no code, return "OTHER".\n'
+        'Examples:\n'
+        'User: "Tell me about VCB"\nOutput: VCB\n'
+        'User: "analyze the VCB stock code"\nOutput: VCB\n'
+        'User: "What is the price of FPT?"\nOutput: FPT\n'
+        'User: "Check transaction code TXN12345"\nOutput: TXN12345\n'
+        'User: "Give me news about MWG"\nOutput: MWG\n'
+        'User: "What is Vinamilk?"\nOutput: VNM\n'
+        'User: "Who is the CEO of VCB?"\nOutput: VCB\n'
+        'User: "My customer code is KH001, please check"\nOutput: KH001\n'
+        'User: "Tell me a joke"\nOutput: OTHER\n'
+        'User: "How is the market today?"\nOutput: OTHER\n'
     )
 )
 
@@ -44,7 +68,10 @@ qa_model = OpenAIModel(
 )
 qa_agent = Agent(
     qa_model,
-    system_prompt='You are a stock AI assistant. Answer naturally, briefly, and in a friendly manner.'
+    system_prompt=(
+        'You are a friendly and concise financial assistant. Answer questions about stocks, codes, markets, and finance clearly and briefly. '
+        'If you don\'t know, politely say so. Use a conversational tone.'
+    )
 )
 
 async def get_stock_info(symbol: str):
@@ -64,6 +91,7 @@ async def get_stock_info(symbol: str):
 async def chat(req: ChatRequest):
     # Agent 1: LLM determines intent/symbol
     intent = (await intent_agent.run(req.message)).output.strip()
+    print('[DEBUG] intent:', intent)
     if intent != "OTHER":
         info = await get_stock_info(intent)
         if info:
