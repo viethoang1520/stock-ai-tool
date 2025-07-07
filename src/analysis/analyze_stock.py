@@ -23,7 +23,7 @@ class SupportDependencies:
 class SupportOutput(BaseModel):
   analysis_advice: str = Field(description='Advice return to the customer')
   symbol: str = Field(description='Symbol of the stock')
-  sentiment: str = Field(description='Sentiment of the stock: positive, negative, neutral')
+  sentiment: str = Field(description='Sentiment of the stock: POSITIVE, NEGATIVE, NEUTRAL')
   topic: str = Field(description='Topic of the stock: news, financial, etc.')
 
   

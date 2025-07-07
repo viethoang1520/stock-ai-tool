@@ -4,6 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from crawlers.get_stock_info import extract_symbol_info
+from db_utils.pg_services import save_support_output_to_db
 from analysis.analyze_stock import stock_agent, SupportDependencies, DataCrawl
 import datetime
 import re
@@ -30,5 +31,8 @@ async def main(symbol: str):
     tts.save(audio_path)
     print(f"Audio saved to {audio_path}")
 
+    # 4. Lưu kết quả phân tích vào database
+    await save_support_output_to_db(result.output)
+
 if __name__ == "__main__":
-    asyncio.run(main("HPG"))
+    asyncio.run(main("ACB"))

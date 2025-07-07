@@ -36,19 +36,27 @@ async def extract_cafebiz_news():
         verbose=True
       )
 
+      output = []
       for result in results:
         if result.success and result.extracted_content:
-          print(f"Successfully crawled: {result.url}")
           news = json.loads(result.extracted_content)
-          for item in news:
-            print(f"Title: {item.get('title')}")
-          print("---")
+          output.append({
+            'url': result.url,
+            'success': True,
+            'news': news
+          })
         else:
-          print(f"Failed to crawl: {result.url}")
-          print(f"Error: {result.error_message}")
-          print("---")
+          output.append({
+            'url': result.url,
+            'success': False,
+            'error_message': result.error_message
+          })
+      return output
+
 if __name__ == "__main__":
   import asyncio
-  asyncio.run(extract_cafebiz_news())
+  results = asyncio.run(extract_cafebiz_news())
+  import pprint
+  pprint.pprint(results)
 
 
