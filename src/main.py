@@ -9,6 +9,9 @@ import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
+from analysis.analyze_market_main import main as analyze_market_main
+from analysis.analyze_stock_main import main as analyze_stock_main
+from fastapi import Body
 
 DB_CONFIG = {
     'user': 'swd_stockintel_user',
@@ -35,6 +38,9 @@ async def on_startup():
 
 class ChatRequest(BaseModel):
     message: str
+
+class StockRequest(BaseModel):
+    symbol: str
 
 # Agent 1: LLM to determine intent and extract code (any type)
 intent_model = OpenAIModel(
@@ -101,3 +107,23 @@ async def chat(req: ChatRequest):
     # Agent 3: LLM answers other questions
     answer = (await qa_agent.run(req.message)).output
     return {"answer": answer}
+
+@app.post("/analyze-market")
+async def analyze_market_api():
+    try:
+        result = await analyze_market_main()
+        if isinstance(result, dict) and 'error' in result and 'message' in result:
+            return result
+        return {"error": False, "message": "Market analysis completed."}
+    except Exception as e:
+        return {"error": True, "message": str(e)}
+
+@app.post("/analyze-stock")
+async def analyze_stock_api(req: StockRequest):
+    try:
+        result = await analyze_stock_main(req.symbol)
+        if isinstance(result, dict) and 'error' in result and 'message' in result:
+            return result
+        return {"error": False, "message": f"Stock analysis for {req.symbol} completed."}
+    except Exception as e:
+        return {"error": True, "message": str(e)}

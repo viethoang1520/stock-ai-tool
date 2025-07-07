@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-
 from pydantic import BaseModel, Field
-
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.deepseek import DeepSeekProvider
@@ -21,10 +19,11 @@ class SupportDependencies:
   stock_data: DataCrawl
 
 class SupportOutput(BaseModel):
-  analysis_advice: str = Field(description='Advice return to the customer')
+  title: str = Field(description='Tiêu đề: Tên cổ phiếu + ngày tháng năm + phiên (sáng/ chiều/ ngày )')
+  analysis_advice: str = Field(description='Advice return to the customer written as a post')
   symbol: str = Field(description='Symbol of the stock')
   sentiment: str = Field(description='Sentiment of the stock: POSITIVE, NEGATIVE, NEUTRAL')
-  topic: str = Field(description='Topic of the stock: news, financial, etc.')
+  topic: str = Field(description='Topic of the stock:  Tài chính, Kinh tế, Chính trị, Quốc tế, Thị trường, Công nghệ, etc.')
 
   
 model = OpenAIModel(

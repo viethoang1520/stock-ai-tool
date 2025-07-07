@@ -10,8 +10,10 @@ import re
 from crawlers.crawl_cafebiz_news import extract_cafebiz_news
 from analysis.analyze_market import market_agent, MarketAnalysisOutput
 from db_utils.pg_services import save_market_analysis_to_db
+from db_utils.pg_pool import init_db_pool
 
 async def main():
+    await init_db_pool()
     # 1. Crawl dữ liệu
     crawl_results = await extract_cafebiz_news()
     for item in crawl_results:

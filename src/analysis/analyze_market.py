@@ -7,8 +7,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class MarketAnalysisOutput(BaseModel):
-    analysis: str = Field(description="Bài phân tích toàn thị trường chứng khoán Việt Nam")
-    sentiment: str = Field(description="Sentiment of the market: POSITIVE, NEGATIVE, NEUTRAL")
+  title: str = Field(description="Tiêu đề: Thị trường chứng khoán Việt Nam ngày hôm nay")
+  analysis: str = Field(description="Bài phân tích toàn thị trường chứng khoán Việt Nam")
+  sentiment: str = Field(description="Sentiment of the market: POSITIVE, NEGATIVE, NEUTRAL")
 
 model = OpenAIModel(
   'deepseek-chat',
@@ -16,8 +17,10 @@ model = OpenAIModel(
 )
 
 SYSTEM_PROMPT = (
-    "Bạn là chuyên gia phân tích chứng khoán. Hãy viết một bài phân tích cấp độ thị trường chứng khoán Việt Nam dựa trên các tiêu đề tin tức sau, tập trung vào xu hướng, rủi ro, cơ hội nổi bật và tác động đến thị trường. Bài viết cần sâu sắc, có dẫn chứng từ tiêu đề, và mang tính tổng hợp, không liệt kê từng tin."
-)
+    'You are a stock analysis agent in our system. Provide the customer with a stock analysis based on the given stock data. '
+    'Do not use any special characters (such as *, /, -, _, #, etc.) or markdown formatting in your output. '
+    'Write the analysis in plain, natural Vietnamese sentences only.'
+  )
 
 market_agent = Agent(
     model,

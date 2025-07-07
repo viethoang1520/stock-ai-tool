@@ -23,7 +23,6 @@ async def extract_cafebiz_news():
     )
 
     urls=[
-        'https://cafebiz.vn/',
         'https://cafebiz.vn/vi-mo.chn',
         'https://cafebiz.vn/cau-chuyen-kinh-doanh.chn',
         'https://cafebiz.vn/cong-nghe.chn'

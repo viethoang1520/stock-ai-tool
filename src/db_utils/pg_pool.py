@@ -1,4 +1,4 @@
- import asyncpg
+import asyncpg
 
 DB_CONFIG = {
     'user': 'swd_stockintel_user',

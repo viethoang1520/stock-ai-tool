@@ -8,8 +8,10 @@ from db_utils.pg_services import save_support_output_to_db
 from analysis.analyze_stock import stock_agent, SupportDependencies, DataCrawl
 import datetime
 import re
+from db_utils.pg_pool import init_db_pool
 
 async def main(symbol: str):
+    await init_db_pool()
     # 1. Lấy thông tin chứng khoán
     stock_data = await extract_symbol_info(symbol)
     print(f"Stock data for {symbol}: {stock_data}")
@@ -35,4 +37,4 @@ async def main(symbol: str):
     await save_support_output_to_db(result.output)
 
 if __name__ == "__main__":
-    asyncio.run(main("ACB"))
+    asyncio.run(main("FPT"))

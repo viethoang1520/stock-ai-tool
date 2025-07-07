@@ -1,7 +1,7 @@
 from db_utils.pg_pool import get_pool
 from datetime import datetime, time
 
-async def save_support_output_to_db(support_output, session):
+async def save_support_output_to_db(support_output):
     """
     Lưu thông tin SupportOutput vào bảng stock_analysis, kèm phiên giao dịch.
     support_output: object có các thuộc tính analysis_advice, symbol, sentiment, topic
@@ -22,9 +22,10 @@ async def save_support_output_to_db(support_output, session):
         # Lưu thông tin vào bảng post
         await conn.execute(
             """
-            INSERT INTO post (content, stock_id, sentiment, topic, session, level)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO post (title, content, stock_id, sentiment, topic, session, level)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             """,
+            support_output.title,
             support_output.analysis_advice,
             stock_id,
             support_output.sentiment,
@@ -38,29 +39,32 @@ def get_trading_session(dt=None):
         dt = datetime.now()
     t = dt.time()
     if t < time(15, 0):
-      return "MORNING"
+      return 1
     elif time(15, 0) <= t < time(17, 0):
-      return "AFTERNOON"
+      return 2
     else:
-      return "ALLDAY"
+      return 3
 
 async def save_market_analysis_to_db(market_analysis):
-  """
-  Lưu thông tin MarketAnalysis vào bảng post
-  market_analysis: object có các thuộc tính analysis, sentiment
-  """
+    """
+    Lưu thông tin MarketAnalysis vào bảng post
+    market_analysis: object có các thuộc tính title, analysis, sentiment
+    """
     pool = get_pool()
     async with pool.acquire() as conn:
         await conn.execute(
             """
-            INSERT INTO post (content, sentiment, topic, level)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO post (title, content, sentiment, topic, level)
+            VALUES ($1, $2, $3, $4, $5)
             """,
+            market_analysis.title,
             market_analysis.analysis,
             market_analysis.sentiment,
+            "MARKET", 
             "MARKET",
-            "MARKET"
         )
+
+
 
 
 # Ví dụ sử dụng:
