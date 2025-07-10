@@ -19,7 +19,7 @@ class SupportDependencies:
   stock_data: DataCrawl
 
 class SupportOutput(BaseModel):
-  title: str = Field(description='Tiêu đề: Tên cổ phiếu + ngày tháng năm + phiên (sáng/ chiều/ ngày )')
+  title: str = Field(description='Tiêu đề: Phân tích cổ phiếu + Tên cổ phiếu ')
   analysis_advice: str = Field(description='Advice return to the customer written as a post')
   symbol: str = Field(description='Symbol of the stock')
   sentiment: str = Field(description='Sentiment of the stock: POSITIVE, NEGATIVE, NEUTRAL')
