@@ -139,7 +139,7 @@ async def main(symbol: str, secret_key: str = "your-secret-key-here", upload_to_
 
 if __name__ == "__main__":
     # Cấu hình
-    SYMBOL = "FPT"
+    SYMBOL = "VNM"
     SECRET_KEY = os.getenv("CLOUDINARY_SECRET_KEY")  # Kiểm tra env variable
     UPLOAD_TO_SERVER = True
     
